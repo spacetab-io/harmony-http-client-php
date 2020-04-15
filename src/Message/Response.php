@@ -2,7 +2,7 @@
 
 namespace HarmonyIO\HttpClient\Message;
 
-use Amp\Artax\Response as ArtaxResponse;
+use Amp\Http\Client\Response as AmpResponse;
 use HarmonyIO\Cache\CacheableResponse;
 use HarmonyIO\HttpClient\Exception\InvalidCachedResponse;
 
@@ -23,7 +23,7 @@ class Response implements CacheableResponse
     /** @var string */
     private $body;
 
-    public function __construct(ArtaxResponse $response, string $body)
+    public function __construct(AmpResponse $response, string $body)
     {
         $this->protocolVersion     = $response->getProtocolVersion();
         $this->numericalStatusCode = $response->getStatus();
@@ -62,6 +62,7 @@ class Response implements CacheableResponse
     }
 
     /**
+     * @param string $key
      * @return string[]
      */
     public function getHeaderArray(string $key): array

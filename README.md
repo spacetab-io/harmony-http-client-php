@@ -10,7 +10,7 @@ Async caching aware http client
 
 ## Requirements
 
-- PHP 7.3
+- PHP 7.3+
 - Redis (if wanting to use the Redis caching provider)
 
 In addition for non-blocking context one of the following event libraries should be installed:
@@ -36,22 +36,21 @@ The following example shows how to make a request and cache the result so consec
 
 namespace Foo;
 
-use Amp\Artax\DefaultClient;
-use Amp\Redis\Client;
-use HarmonyIO\Cache\Provider\Redis;
+use Amp\Http\Client\HttpClientBuilder;
+use HarmonyIO\Cache\Provider\InMemory;
 use HarmonyIO\Cache\Ttl;
-use HarmonyIO\HttpClient\Client\ArtaxClient;
+use HarmonyIO\HttpClient\Client\HttpClient;
 use HarmonyIO\HttpClient\Message\CachingRequest;
-use function Amp\wait;
+use function Amp\Promise\wait;
 
 // create instance of the HTTP client
-$httpClient = new ArtaxClient(
-    new DefaultClient(),
-    new Redis(new Client('tcp://127.0.0.1:6379'))
+$httpClient = new HttpClient(
+    HttpClientBuilder::buildDefault(),
+    new InMemory()
 );
 
 // create a new request to be cached for 10 seconds
-$request = new CachingRequest('TestRequestKey', new Ttl(10), 'https://httpbin.org/get');
+$request = new CachingRequest('TestRequestKey', 'https://httpbin.org/get', 'GET', new Ttl(10));
 
 // make the request and cache it
 $result = wait($httpClient->request($request));
@@ -69,17 +68,16 @@ It is also possible to make non-caching requests.
 
 namespace Foo;
 
-use Amp\Artax\DefaultClient;
-use Amp\Redis\Client;
-use HarmonyIO\Cache\Provider\Redis;
-use HarmonyIO\HttpClient\Client\ArtaxClient;
-use HarmonyIO\HttpClient\Message\Request;
-use function Amp\wait;
+use Amp\Http\Client\HttpClientBuilder;
+use HarmonyIO\Cache\Provider\InMemory;
+use HarmonyIO\HttpClient\Client\HttpClient;
+use Amp\Http\Client\Request;
+use function Amp\Promise\wait;
 
 // create instance of the HTTP client
-$httpClient = new ArtaxClient(
-    new DefaultClient(),
-    new Redis(new Client('tcp://127.0.0.1:6379'))
+$httpClient = new HttpClient(
+    HttpClientBuilder::buildDefault(),
+    new InMemory()
 );
 
 // create a new request to be cached for 10 seconds
@@ -90,33 +88,6 @@ $result = wait($httpClient->request($request));
 
 // make the same request again
 $result = wait($httpClient->request($request));
-```
-
-## Client interface
-
-The HTTP client's interface only contains a single method: `Client::request(\HarmonyIO\HttpClient\Message\Request $request)`.
-
-The `$request` parameter can be either a "normal" non-caching request (`HarmonyIO\HttpClient\Message\Request`) or a caching request (`HarmonyIO\HttpClient\Message\CachingRequest`).
-
-### `HarmonyIO\HttpClient\Message\Request`
-
-The constructor of the request class expects at least a URL to make the request to and optionally an HTTP method (defaults to GET).
-
-Optional request parts can be set in setter method of the request class:
-
-```php
-<?php declare(strict_types=1);
-
-namespace Foo;
-
-use HarmonyIO\HttpClient\Message\Request;
-
-$request = (new Request('https://httpbin.org/post', 'POST'))
-    ->setProtocolVersions('1.1', '2.0')
-    ->addHeader('foo', 'bar')
-    ->addHeader('baz', 'qux')
-    ->setBody('foobar')
-;
 ```
 
 ### `HarmonyIO\HttpClient\Message\CachingRequest`
@@ -130,12 +101,11 @@ Optional request parts can be set in setter method of the request class as defin
 
 namespace Foo;
 
-use HarmonyIO\Cache\Ttl;
 use HarmonyIO\HttpClient\Message\CachingRequest;
 
-$request = (new CachingRequest('UniqueCachingKey', new Ttl(Ttl::ONE_HOUR), 'https://httpbin.org/get'))
-    ->setProtocolVersions('1.1', '2.0')
-    ->addHeader('foo', 'bar')
-    ->addHeader('baz', 'qux')
-;
+$cachingRequest = new CachingRequest('UniqueCachingKey', 'https://httpbin.org/get');
+$request = $cachingRequest->getRequest();
+$request->setProtocolVersions(['1.1', '2.0']);
+$request->addHeader('foo', 'bar');
+$request->addHeader('baz', 'qux');
 ```

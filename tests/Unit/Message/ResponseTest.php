@@ -2,49 +2,32 @@
 
 namespace HarmonyIO\HttpClientTest\Unit\Message;
 
-use Amp\Artax\Response as ArtaxResponse;
+use Amp\ByteStream\InMemoryStream;
+use Amp\Http\Client\Request;
+use Amp\Http\Client\Response as AmpResponse;
+use Amp\PHPUnit\AsyncTestCase;
 use HarmonyIO\Cache\CacheableResponse;
 use HarmonyIO\HttpClient\Exception\InvalidCachedResponse;
 use HarmonyIO\HttpClient\Message\Response;
-use HarmonyIO\PHPUnitExtension\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
 
-class ResponseTest extends TestCase
+class ResponseTest extends AsyncTestCase
 {
     /** @var Response */
     private $response;
 
     public function setUp(): void
     {
-        /** @var MockObject|ArtaxResponse $artaxResponse */
-        $artaxResponse = $this->createMock(ArtaxResponse::class);
+        parent::setUp();
 
-        $artaxResponse
-            ->method('getProtocolVersion')
-            ->willReturn('1.0')
-        ;
+        $headers = [
+            'foo' => [
+                'bar',
+                'baz',
+            ],
+        ];
 
-        $artaxResponse
-            ->method('getStatus')
-            ->willReturn(200)
-        ;
-
-        $artaxResponse
-            ->method('getReason')
-            ->willReturn('OK')
-        ;
-
-        $artaxResponse
-            ->method('getHeaders')
-            ->willReturn([
-                'foo' => [
-                    'bar',
-                    'baz',
-                ],
-            ])
-        ;
-
-        $this->response = new Response($artaxResponse, 'The body');
+        $ampResponse = new AmpResponse('1.0', 200, 'OK', $headers, new InMemoryStream('The body'), new Request(''));
+        $this->response = new Response($ampResponse, 'The body');
     }
 
     public function testImplementsCacheableInterface(): void

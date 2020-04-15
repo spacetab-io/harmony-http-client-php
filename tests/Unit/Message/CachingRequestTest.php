@@ -2,25 +2,25 @@
 
 namespace HarmonyIO\HttpClientTest\Unit\Message;
 
+use Amp\PHPUnit\AsyncTestCase;
 use HarmonyIO\Cache\CacheableRequest;
 use HarmonyIO\Cache\Key;
 use HarmonyIO\Cache\Ttl;
 use HarmonyIO\HttpClient\Message\CachingRequest;
-use HarmonyIO\PHPUnitExtension\TestCase;
 
-class CachingRequestTest extends TestCase
+class CachingRequestTest extends AsyncTestCase
 {
     public function testImplementsCachingInterface(): void
     {
         $this->assertInstanceOf(
             CacheableRequest::class,
-            (new CachingRequest('TestKey', new Ttl(10), 'https://example.com'))
+            (new CachingRequest('TestKey', 'https://example.com'))
         );
     }
 
     public function testGetCachingKey(): void
     {
-        $key = (new CachingRequest('TestKey', new Ttl(10), 'https://example.com'))->getCachingKey();
+        $key = (new CachingRequest('TestKey', 'https://example.com'))->getCachingKey();
 
         $this->assertInstanceOf(Key::class, $key);
     }
@@ -29,7 +29,7 @@ class CachingRequestTest extends TestCase
     {
         $this->assertSame(
             10,
-            (new CachingRequest('TestKey', new Ttl(10), 'https://example.com'))->getTtl()->getTtlInSeconds()
+            (new CachingRequest('TestKey', 'https://example.com', 'GET', new Ttl(10)))->getTtl()->getTtlInSeconds()
         );
     }
 }

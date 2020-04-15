@@ -2,10 +2,10 @@
 
 namespace HarmonyIO\HttpClientTest\Unit\Exception;
 
+use Amp\PHPUnit\AsyncTestCase;
 use HarmonyIO\HttpClient\Exception\InvalidCachedResponse;
-use HarmonyIO\PHPUnitExtension\TestCase;
 
-class InvalidCachedResponseTest extends TestCase
+class InvalidCachedResponseTest extends AsyncTestCase
 {
     public function testMessage(): void
     {

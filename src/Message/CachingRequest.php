@@ -2,11 +2,12 @@
 
 namespace HarmonyIO\HttpClient\Message;
 
+use Amp\Http\Client\Request;
 use HarmonyIO\Cache\CacheableRequest;
 use HarmonyIO\Cache\Key;
 use HarmonyIO\Cache\Ttl;
 
-class CachingRequest extends Request implements CacheableRequest
+class CachingRequest implements CacheableRequest
 {
     private const CACHE_TYPE = 'HttpRequest';
 
@@ -16,21 +17,49 @@ class CachingRequest extends Request implements CacheableRequest
     /** @var Ttl */
     private $ttl;
 
-    public function __construct(string $key, Ttl $ttl, string $uri, string $method = 'GET')
-    {
-        $this->key = $key;
-        $this->ttl = $ttl;
+    /** @var Request */
+    private $request;
 
-        parent::__construct($uri, $method);
+    /**
+     * CachingRequest constructor.
+     *
+     * @param string $key
+     * @param string $uri
+     * @param string $method
+     * @param Ttl|null $ttl
+     */
+    public function __construct(string $key, string $uri, string $method = 'GET', ?Ttl $ttl = null)
+    {
+        $this->key    = $key;
+        $this->ttl    = $ttl;
+
+        $this->request = new Request($uri, $method);
     }
 
     public function getCachingKey(): Key
     {
-        return new Key(self::CACHE_TYPE, $this->key, md5(serialize($this)));
+        $hashKey = sprintf(
+            '%s-%d-%s-%s',
+            $this->key,
+            $this->getTtl()->getTtlInSeconds(),
+            $this->getRequest()->getUri(),
+            $this->getRequest()->getMethod()
+        );
+
+        return new Key(self::CACHE_TYPE, $this->key, md5(serialize($hashKey)));
     }
 
     public function getTtl(): Ttl
     {
+        if (is_null($this->ttl)) {
+            return new Ttl(Ttl::ONE_HOUR);
+        }
+
         return $this->ttl;
+    }
+
+    public function getRequest(): Request
+    {
+        return $this->request;
     }
 }
