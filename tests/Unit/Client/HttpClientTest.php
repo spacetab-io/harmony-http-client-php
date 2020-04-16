@@ -12,6 +12,7 @@ use Amp\Loop;
 use Amp\PHPUnit\AsyncTestCase;
 use Amp\Success;
 use HarmonyIO\Cache\Cache;
+use HarmonyIO\Cache\Provider\InMemory;
 use HarmonyIO\HttpClient\Client\Client;
 use HarmonyIO\HttpClient\Client\HttpClient;
 use HarmonyIO\HttpClient\Message\CachingRequest;
@@ -33,6 +34,13 @@ class HttpClientTest extends AsyncTestCase
 
         $this->httpClient = $this->createMock(Client::class);
         $this->cache      = $this->createMock(Cache::class);
+    }
+
+    public function testConstructorReceiveAnHttpClientArgumentFirst(): void
+    {
+        $client = new HttpClient($this->createMock(DelegateHttpClient::class), new InMemory());
+
+        $this->assertInstanceOf(HttpClient::class, $client);
     }
 
     public function testImplementsDelegatedHttpClientInterface(): void

@@ -10,6 +10,7 @@ use Amp\NullCancellationToken;
 use Amp\Promise;
 use HarmonyIO\Cache\Cache;
 use HarmonyIO\Cache\Item;
+use HarmonyIO\Cache\Provider\InMemory;
 use HarmonyIO\HttpClient\Message\CachingRequest;
 use HarmonyIO\HttpClient\Message\Response;
 use function Amp\call;
@@ -22,10 +23,12 @@ class HttpClient implements Client
     /** @var Cache */
     private $cache;
 
-    public function __construct(Client $httpClient, Cache $cache)
+    public function __construct(DelegateHttpClient $httpClient, ?Cache $cache = null)
     {
         $this->httpClient = $httpClient;
-        $this->cache      = $cache;
+
+        // phpcs:ignore SlevomatCodingStandard.ControlStructures.DisallowShortTernaryOperator
+        $this->cache = $cache ?: new InMemory();
     }
 
     /**

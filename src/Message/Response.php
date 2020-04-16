@@ -81,7 +81,9 @@ class Response implements CacheableResponse
 
     public function serialize(): string
     {
-        return json_encode([
+        // json_encode fails with google.com contents.
+        // "Malformed UTF-8 characters, possibly incorrectly encoded"
+        return serialize([
             'protocolVersion'     => $this->protocolVersion,
             'numericalStatusCode' => $this->numericalStatusCode,
             'textualStatusCode'   => $this->textualStatusCode,
@@ -97,9 +99,9 @@ class Response implements CacheableResponse
     // phpcs:ignore SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingParameterTypeHint
     public function unserialize($serialized): void
     {
-        $cachedData = json_decode($serialized, true);
+        $cachedData = unserialize($serialized);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($cachedData === false) {
             throw new InvalidCachedResponse();
         }
 
