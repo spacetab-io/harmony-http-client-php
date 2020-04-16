@@ -14,7 +14,7 @@ use HarmonyIO\HttpClient\Message\CachingRequest;
 use HarmonyIO\HttpClient\Message\Response;
 use function Amp\call;
 
-class HttpClient implements DelegateHttpClient
+class HttpClient implements Client
 {
     /** @var DelegateHttpClient */
     private $httpClient;
@@ -22,7 +22,7 @@ class HttpClient implements DelegateHttpClient
     /** @var Cache */
     private $cache;
 
-    public function __construct(DelegateHttpClient $httpClient, Cache $cache)
+    public function __construct(Client $httpClient, Cache $cache)
     {
         $this->httpClient = $httpClient;
         $this->cache      = $cache;

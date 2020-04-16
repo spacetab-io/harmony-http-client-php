@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* `Client\ArtaxClient` renamed to `Client\HttpClint` and implements `Amp\Http\Client\DelegateHttpClient` instead of library `Client` interface.
+* `Client\ArtaxClient` renamed to `Client\HttpClient`.
 * `Message\CachingRequest` has a new order of constructor arguments: `new CachingRequest('google1', 'https://google.com')` where 1 arg is caching key, 2 is url, 3 is http method (GET by default) and last is Ttl (one hour by default).
 * Hash key for caching now has a new generating algo because `Amp\Http\Client\Request` does not support serialization.
 * Rewritten tests to use official `amphp/phpunit-util` package instead of `harmonyio/phpunit-extensions`.    
